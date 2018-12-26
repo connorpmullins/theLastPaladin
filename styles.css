@@ -1,0 +1,323 @@
+html, body {
+    background-color: grey;
+    margin: 0;
+    height: 100%;
+}
+
+header {
+  align-items: center;
+  background-color: black;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+h1 {
+  color: white;
+  font-family: 'Federant', cursive;
+}
+
+h5, h6, p, li {
+  font-family: 'Allerta Stencil', sans-serif;
+}
+
+ol {
+  counter-reset: section;                /* Creates a new instance of the
+                                            section counter with each ol
+                                            element */
+  height: 60px;
+  display: none;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+li{
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+li::before {
+  counter-increment: section;
+  content:counter(section) ":   .";
+}
+
+footer {
+  color: white;
+  display: flex;
+  flex-shrink: 1;
+  flex-direction: row;
+  justify-content: center;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+
+
+
+.actor  {
+  position: absolute;
+}
+.background {
+  background: rgb(52, 166, 251);
+  table-layout: fixed;
+  border-spacing: 0;
+}
+.background td {
+  padding: 0;
+}
+.coin   {
+  background: rgb(241, 229, 89);
+}
+.lava {
+  background: rgb(255, 100, 100);
+}
+.player {
+  background: rgb(64, 64, 64);
+}
+.wall {
+  background: white;
+}
+
+.lost .player {
+  background: rgb(160, 64, 64);
+}
+.won .player {
+  box-shadow: -4px -7px 8px white, 4px -7px 8px white;
+}
+
+.game {
+  overflow: hidden;
+  max-width: 600px;
+  max-height: 350px;
+  position: relative;
+}
+
+
+
+
+
+
+.actionItem {
+  display: flex;
+  flex: 1;
+  padding: 4px;
+}
+
+.alignCenter {
+  align-items: flex-start;
+  display: flex;
+  justify-content: center;
+  min-height: 30px;
+}
+
+.endGame {
+  /*align-items: center;*/
+  display: none;
+  flex-direction: column;
+  height: 350px;
+  justify-content: space-between;
+  width: 600px;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+.flexShrink {
+  flex-shrink: 1;
+  margin-right: 10px;
+}
+
+.footerElement {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.gameBottom {
+  display: flex;
+  flex: 1;
+  justify-content: flex-start;
+  min-height: 300px;
+  width: 100%;
+}
+
+.gameText {
+  font-family: 'Allerta Stencil', sans-serif;
+  font-size: 12px;
+}
+
+.invisible {
+  display: none;
+}
+
+.main {
+  background-color: white;
+  background-image: url('./images/background.png');
+  background-size: cover;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+.monster {
+  background-color: purple;
+}
+
+.scoreText {
+  color: white;
+  font-family: 'Federant', cursive;
+}
+
+.statusElement {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  margin-left: 10px;
+  min-height: 80px;
+}
+
+.subHeading {
+  margin-right: 20px;
+  color: #303030;
+}
+
+.textContainer {
+  align-items: flex-start;
+  background-color: #303030;
+  border-bottom-width: 2px;
+  border-color: lightGrey;
+  color: lightGrey;
+  display: flex;
+  flex-shrink: 1;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-height: 60px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#actionOptions {
+  display: none;
+}
+
+#authorName {
+  color: grey;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding-left: 30px;
+}
+
+#chapter {
+  margin-left: 10px;
+}
+
+#continue {
+  margin-bottom: 10px;
+}
+
+#continueGame, #endGame1 {
+  align-items: center;
+  justify-content: center;
+}
+
+#doStuff {
+  flex-direction: column;
+}
+
+#game {
+  display: none;
+  flex-shrink: 1;
+  flex-direction: column;
+  max-width: 600px;
+}
+
+#gamebox {
+  flex: 2;
+}
+
+#gameWindow {
+  flex: 1;
+}
+
+#lives {
+  margin-left: 10px;
+}
+
+#playPause {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 30px;
+}
+
+#replay {
+  align-self: center;
+  height: 30px;
+  width: 80px;
+}
+
+#score {
+  background-color: dark-grey;
+  flex: 1;
+  font-size: 19px;
+  padding-left: 180px;
+}
+
+#scoreTitle {
+  align-self: center;
+}
+
+#seeScore {
+  font-family: 'Federant', cursive;
+  font-size: 14px;
+  height: 50px;
+  width: 60px;
+}
+
+#speaker {
+  margin-top: 10px;
+}
+
+#speakerBox {
+  align-items: flex-start;
+  display: flex;
+}
+
+#submitToEmail {
+  align-self: center;
+  display: block;
+  font-family: 'Federant', cursive;
+  font-size: 14px;
+  height: 30px;
+  width: 200px;
+}
+
+#startButton {
+  display: block;
+  height: 20px;
+  width: 50px;
+}
+
+#status {
+  background-color: #303030;
+  color: lightGrey;
+  display: flex;
+  flex-shrink: 1;
+  flex-direction: row;
+  justify-content: center;
+  min-height: 80px;
+}
+
+#title {
+  color: green;
+}
+
+#white {
+  background-color: white;
+}

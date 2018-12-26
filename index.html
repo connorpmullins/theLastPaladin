@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Allerta+Stencil|Federant" rel="stylesheet">
+
+  <script src="./javascript/levels.js"></script>
+  <script src="./javascript/constructor.js"></script>
+  <iframe src="audio/silence.mp3" allow="autoplay" style="display:none" id="iframeAudio">
+</iframe>
+</head>
+<body>
+  <header>
+    <div class="flex1" id="authorName">
+      <h5>written by connor</h5>
+    </div>
+    <div>
+      <h1 class="flex1" id="title"> The Last Paladin </h1>
+    </div>
+    <!-- I can play a silent track automatically before this to enable autoplay -->
+    <!-- add autoplay back in to make music work again -->
+    <audio autoplay loop id="music">
+      <source src="./audio/newHope.ogg" type="audio/mp3">
+    </audio>
+    <div class="flex1" id="playPause">
+      <button id="play" onclick="document.getElementById('music').play()">
+        <i class="fa fa-play"></i>
+      </button>
+      <button id="pause" onclick="document.getElementById('music').pause()">
+        <i class="fa fa-pause"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Wrapper around all game components [including start button and post-game result window] -->
+  <section class="main" id="gameWindow">
+
+    <!-- Start Button. Disapears after being clicked on. Should re-appear on gameover-->
+    <button id="startButton" onclick="onStart()">Start</button>
+    <!-- div 'game' has display none at start and is changed to display flex by startButton -->
+    <div id="game">
+
+      <div id="continueGame" class="endGame">
+        <h2 class="scoreText"> You Are Dead. </h2>
+        <p class="scoreText">
+          Do.. or do not. There is no try. Will you continue?
+        </p>
+        <p id="textResults" class="scoreText"></p>
+        <p id="lastLevel" class="invisible"></p>
+        <p id="lastCoins" class="invisible"></p>
+        <p id="lastTime" class="invisible"></p>
+        <p id="lastAnswers" class="invisible"></p>
+        <button id="continue" onclick="continueGame()"> Continue </button>
+        <button id="seeScoreLose" onclick="viewScoreLose()"> View Score: </button>
+      </div>
+      <div id="endGame1" class="endGame">
+        <h2 class="scoreText"> Congatulations!</h2>
+        <h2 class="scoreText"> You Win!! </h2>
+        <p class="scoreText">
+          Hey, this is Connor. Thank you for taking the time to play my game.
+        </p>
+        <p id="gameResult" class="scoreText"></p>
+        <button id="seeScoreWin" onclick="viewScoreWin()"> View Score: </button>
+      </div>
+      <div id="endGame2" class="endGame">
+        <button id="replay" onclick="onStart()">Play Again</button>
+        <h3 id="scoreTitle" class="scoreText"> Score: </h3>
+        <div id="score" class="flex1">
+          <dl>
+            <dt class="scoreText">Coins :</dt>
+            <dd id="coins" class="scoreText"></dd>
+            <dt class="scoreText">Correct Answers :</dt>
+            <dd id="correctAnswers" class="scoreText"></dd>
+            <dt class="scoreText">Continues used :</dt>
+            <dd id="hasContinued" class="scoreText"></dd>
+            <dt class="scoreText">Time :</dt>
+            <dd id="time" class="scoreText"></dd>
+          </dl>
+        </div>
+        <button id="submitToEmail" onclick="onSubmit()">
+          Submit to Leader Board
+        </button>
+      </div>
+
+      <!--
+        Dark Grey Box at the top of the main view.
+        Containes lives, current chapter, and in the future should contain paused status & maybe more
+      -->
+      <div id="status">
+        <div class="statusElement">
+          <h5>Lives Remaining:</h5>
+          <h5 id="lives"></h5>
+        </div>
+        <div class="statusElement">
+          <h5>Current Chapter:</h5>
+          <h5 id="chapter"></h5>
+        </div>
+      </div>
+
+      <!-- Main Game View -->
+      <div id="gameBox"></div>
+      <audio id="soundFX"></audio>
+
+      <!-- Wrapper around the game text and  interaction options display -->
+      <div id="gameBottom" class="gameBottom">
+        <!-- Game Text View -->
+        <div class="textContainer">
+          <!-- Displays npc speaking, if any -->
+          <div class="flexShrink" id="speakerBox">
+            <h5 id="speaker"></h5>
+          </div>
+          <!-- Displays game text -->
+          <div class="flex1">
+            <p class="gameText" id="textBox"></p>
+          </div>
+        </div>
+        <!-- Displays possible user responses -->
+        <div class="textContainer" id="doStuff">
+          <ol type="1" id="actionOptions">
+            <li class="actionItem" id="optionA"></li>
+            <li class="actionItem" id="optionB"></li>
+            <li class="actionItem" id="optionC"></li>
+            <li class="actionItem" id="optionD"></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer id="footer">
+    <div class="footerElement">
+      <h5 class="subHeading"> Credit For Music: </h5>
+      <h6> <a href="https://ozzed.net/music/">Ozzed</a> (Boktipset Från Helvetet, Satisfucktion), who has some really fantastic stuff. 8-bit Empire is great.</h6>
+      <h6> <a href="https://ericskiff.com/music/">Eric Skiff</a> deserves credit for his entire Resistor Anthems Album. Among the best opensource 8-bit / Chiptune music out there.</h6>
+      <h6> Juhani Junkala (Level 3) @ juhani.junkala@musician.org</h6>
+      <h6> <a href="https://patrickdearteaga.com">Patrick de Artega</a> (New Hope, Never Surrender)</h6>
+    </div>
+    <div class="footerElement">
+      <h5 class="subHeading"> Credit For Images: </h5>
+      <h6>polymental69 (landing background)</h6>
+      <h6>dogchicken (player sprite)</h6>
+      <h6>yolkati (player sprite)</h6>
+      <h6>LetargicDev (portal sprite)</h6>
+    </div>
+    <div class="footerElement">
+      <h5 class="subHeading"> Credit For Code: </h5>
+      <h6> Much of the code for the game engine comes from Marijn Haverbeke and his book, <a href="https://eloquentjavascript.net/">Eloquent JavaScript</a></h6>
+
+      <h5 class="subHeading"> Contact Me: </h5>
+      <h6> Send me an email at thelastpaladin.developer@gmail.com</h6>
+    </div>
+    <div class="footerElement">
+      <h5 class="subHeading"> Credit For Ideas: </h5>
+      <h6>Middle Earth</h6>
+      <h6>Prydain</h6>
+      <h6>The Wizarding World</h6>
+      <h6>Arrakis</h6>
+      <h6>The Arcanum</h6>
+      <h6>Roshar</h6>
+      <h6>Disc World</h6>
+      <h6>The Night Circus</h6>
+      <h6>The Hitchiker's Guide</h6>
+    </div>
+  </footer>
+</body>
+</html>
