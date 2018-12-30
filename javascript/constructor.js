@@ -58,6 +58,7 @@ let CONTINUEGAMESTATS = {
 // lines 49 - 90
 
 // Handle score submission (stringify && encode score && send to my dev email)
+/* eslint-disable no-unused-vars */
 function onSubmit() {
   const score = {
     coins: document.getElementById("coins").innerHTML,
@@ -109,6 +110,7 @@ function continueGame() {
   // console.log("calling continue game. continueArgs: ", CONTINUEGAMESTATS);
   onStart(CONTINUEGAMESTATS);
 }
+/* eslint-enable no-unused-vars */
 
 // Main Game Function
 function onStart(preDeathScore) {
@@ -369,6 +371,7 @@ function onStart(preDeathScore) {
     // initialize to new time or carry over from before continue
     let startTime;
     let endTime;
+    let continuesUsed;
     let lives = 5;
     let CUMSCORE = {};
     let loadVec = {};
@@ -381,13 +384,15 @@ function onStart(preDeathScore) {
     if (continueArgs) {
       // console.log("You called runGame with continueArgs: ", continueArgs);
       level = continueArgs.lastLevel;
+      continuesUsed = continueArgs.continuesUsed;
       startTime = continueArgs.lastTime;
       CUMSCORE.coins = continueArgs.lastCoins;
       CUMSCORE.correctAnswers = continueArgs.lastAnswers;
     }
     // otherwise if we're starting a new game...
     else {
-      level = 0;
+      level = 4;
+      continuesUsed = 0;
       startTime = new Date();
       CUMSCORE.coins = [];
       CUMSCORE.correctAnswers = 0;
@@ -403,19 +408,32 @@ function onStart(preDeathScore) {
     // helper function to keep an array of all coins
     function coinCalc(scoreCoins, responseCoins, savedCoins) {
       const total = [];
-      for (a of scoreCoins) {
+      for (const a of scoreCoins) {
         total.push(a);
       }
-      for (b of responseCoins) {
+      for (const b of responseCoins) {
         total.push(b);
       }
-      for (c of savedCoins) {
+      for (const c of savedCoins) {
         total.push(c);
       }
       // console.log("new score.coin value: ", scoreCoins);
       // console.log("total: ", total);
       return total;
-    };
+    }
+
+    // helper function for converting time to a string
+    function msToTime(s) {
+      const ms = s % 1000;
+      s = (s - ms) / 1000;
+      const secs = s % 60;
+      s = (s - secs) / 60;
+      const mins = s % 60;
+      const hrs = (s - mins) / 60;
+
+      const time = hrs + " hours,   " + mins + " minutes,   " + secs + " . " + ms + " seconds";
+      return time;
+    }
 
     // while your current level is not greater than the last level...
     for (level; level < plans.length + 1;) {
@@ -428,7 +446,7 @@ function onStart(preDeathScore) {
       // console.log("~ 394 checking loadVec: ", loadVec, "checking coins: ", coins);
       if (loadVec.hasOwnProperty("x")) {
         let loadLevel = new Level(plans[level], level);
-      //  console.log('loadVec.x exists!: ', loadVec);
+        // console.log('loadVec.x exists!: ', loadVec);
         for (let actor of loadLevel.startActors) {
           if (actor.type === "player") {
             actor.pos = loadVec;
@@ -439,7 +457,7 @@ function onStart(preDeathScore) {
       } else {
         // otherwise feed the normal level info to runLevel
         res = await runLevel(new Level(plans[level], level),
-                                Display, events[level], music[level]);
+          Display, events[level], music[level]);
       }
       // if you win a level...
       if (res.status === "won" && level !== plans.length) {
@@ -449,7 +467,7 @@ function onStart(preDeathScore) {
         CUMSCORE = {
           coins: coinCalc(CUMSCORE.coins, res.score.coins, coins),
           correctAnswers: CUMSCORE.correctAnswers += res.score.correctAnswers,
-        }
+        };
         // Then clear coins out
         coins = [];
       //console.log("your score after winning: ", CUMSCORE, "plans.length: ", plans.length, "level: ", level);
@@ -463,22 +481,11 @@ function onStart(preDeathScore) {
         CUMSCORE = {
           coins: coinCalc(CUMSCORE.coins, res.score.coins, coins),
           correctAnswers: CUMSCORE.correctAnswers += res.score.correctAnswers,
-        }
+        };
         // set end time
         endTime = new Date();
-        let time;
-
-        // IIFE to convert time to a string
-        (function msToTime(s) {
-          const ms = s % 1000;
-          s = (s - ms) / 1000;
-          const secs = s % 60;
-          s = (s - secs) / 60;
-          const mins = s % 60;
-          const hrs = (s - mins) / 60;
-
-          time = hrs + ' hours,   ' + mins + ' minutes,   ' + secs + ' . ' + ms + ' seconds';
-        })(endTime - startTime);
+        // Convert time to a string
+        let time = msToTime(endTime - startTime);
 
         // update DOM elements, and depending on player results display one of 2 sets of victory text
         document.getElementById("gameBox").style.display = "none";
@@ -487,13 +494,13 @@ function onStart(preDeathScore) {
         document.getElementById("endGame1").style.display = "flex";
         if ((CONTINUEGAMESTATS.continuesUsed > 0) && (CUMSCORE.coins > 150) && (CUMSCORE.correctAnswers > 4)) {
           document.getElementById("gameResult").innerHTML = "I am delighted to announce you have been accepted as the next Paladin. Your incredible intelligence, skill, and perseverance prove you have the makings of someone incredible. Please take the time to submit your score to our leaderboards on the next page.";
-          document.getElementById("hasContinued").innerHTML = hasDied;
+          document.getElementById("hasContinued").innerHTML = continuesUsed;
         } else {
           document.getElementById("gameResult").innerHTML = "I regret to announce, however, that we cannot accept you as a Paladin with your test results the way they are. We do have an opening for an unpaid intern if you are interested. Or you can try again...";
         }
         document.getElementById("coins").innerHTML = CUMSCORE.coins.length + "/ 232";
         document.getElementById("correctAnswers").innerHTML = CUMSCORE.correctAnswers + "/ 9";
-        document.getElementById("hasContinued").innerHTML = CONTINUEGAMESTATS.continuesUsed;
+        document.getElementById("hasContinued").innerHTML = continuesUsed;
         document.getElementById("time").innerHTML = time;
 
         // Exit runGame (and onStart) function
@@ -501,7 +508,7 @@ function onStart(preDeathScore) {
       }
 
       // if you didn't win, lose a life
-      if (res.status === "lost") {lives--};
+      if (res.status === "lost") {lives--; }
 
       // if you have no more lives, save gameplay stats in case of continue
       if (lives === 0) {
@@ -516,7 +523,7 @@ function onStart(preDeathScore) {
         CUMSCORE = {
           coins: coinCalc(CUMSCORE.coins, res.score.coins, coins),
           correctAnswers: CUMSCORE.correctAnswers += res.score.correctAnswers,
-        }
+        };
 
         // clear load vec
         loadVec = {};
@@ -525,17 +532,7 @@ function onStart(preDeathScore) {
         // play 'you lost' song, and do more or less the same thing you do in case of victory (~450)
         audio.src = "./audio/neverSurrender.ogg";
         endTime = new Date();
-        let time;
-        (function msToTime(s) {// NOTE: No need to repeat this function definition
-          const ms = s % 1000;
-          s = (s - ms) / 1000;
-          const secs = s % 60;
-          s = (s - secs) / 60;
-          const mins = s % 60;
-          const hrs = (s - mins) / 60;
-
-          time = hrs + ' hours,   ' + mins + ' minutes,   ' + secs + ' . ' + ms + ' seconds';
-        })(endTime - startTime);
+        let time = msToTime(endTime - startTime);
         // console.log("You've lost!");
         document.getElementById("continueGame").style.display = "flex";
         document.getElementById("submitToEmail").style.display = "none";
@@ -544,7 +541,7 @@ function onStart(preDeathScore) {
         document.getElementById("gameBottom").style.display = "none";
         document.getElementById("coins").innerHTML = CUMSCORE.coins.length;
         document.getElementById("correctAnswers").innerHTML = CUMSCORE.correctAnswers;
-        document.getElementById("hasContinued").innerHTML = CONTINUEGAMESTATS.hasContinued;
+        document.getElementById("hasContinued").innerHTML = continuesUsed;
         document.getElementById("time").innerHTML = time;
         return;
       }
@@ -555,7 +552,7 @@ function onStart(preDeathScore) {
         // update the loadpoint and collect an array of coins to remove from the next playthrough
         loadVec = res.loadPoint;
         if (loadVec.hasOwnProperty("x")) {
-          for (a of res.score.coins) {
+          for (const a of res.score.coins) {
             coins.push(a);
           }
         }
@@ -589,8 +586,7 @@ function onStart(preDeathScore) {
     get type() { return "player"; }
 
     static create(pos) {
-      return new Player(pos.plus(new Vec(0, -0.5)),
-                        new Vec(0, 0));
+      return new Player(pos.plus(new Vec(0, -0.5)), new Vec(0, 0));
     }
   }
 
@@ -618,8 +614,6 @@ function onStart(preDeathScore) {
 
     // init movedX and set it equal to your old position + horizontal movement
     let movedX = pos.plus(new Vec(xSpeed * time, 0));
-
-    let platform
 
     if (state.level.actorTouches(state, movedX, this.size)) {
       pos = movedX;
@@ -653,7 +647,7 @@ function onStart(preDeathScore) {
 
   class Monster {
     constructor(num, pos, speed, distance) {
-      this.num = num
+      this.num = num;
       this.pos = pos;
       this.speed = speed;
       this.distance = distance;
@@ -661,8 +655,7 @@ function onStart(preDeathScore) {
 
     get type() { return "monster"; }
     static create(pos, ch) {
-      return new Monster(ch, pos.plus(new Vec(0, -1)),
-                        new Vec(1.5, 0), 120);
+      return new Monster(ch, pos.plus(new Vec(0, -1)), new Vec(1.5, 0), 120);
     }
 
     update(time, state) {
@@ -751,9 +744,10 @@ function onStart(preDeathScore) {
     soundFX.src = "./audio/death.wav";
     soundFX.play();
     // return same state but change status to 'lost', send a new score, and empty out selected
-  //console.log("creating a new state ~635");
+    //console.log("creating a new state ~635");
     return new State(state.level, state.actors, "lost", state.events, state.score, state.currentEvent, {}, state.eventPause, state.loadPoint);
   };
+
   Lava.prototype.update = function(time, state) {
     let newPos = this.pos.plus(this.speed.times(time));
     if (state.level.actorTouches(state, newPos, this.size)) {
@@ -763,7 +757,8 @@ function onStart(preDeathScore) {
     } else {
       return new Lava(this.pos, this.speed.times(-1));
     }
-  }
+  };
+
   class Coin {
     constructor(pos, basePos, wobble) {
       this.pos = pos;
@@ -773,29 +768,32 @@ function onStart(preDeathScore) {
     get type() { return "coin"; }
     static create(pos) {
       // console.log("creating coin: pos:", pos);
-      let basePos = pos.plus(new Vec(0.2, 0.1));
+      const basePos = pos.plus(new Vec(0.2, 0.1));
       return new Coin(basePos, basePos, Math.random() * Math.PI * 2);
     }
   }
+
   Coin.prototype.size = new Vec(0.6, 0.6);
+
   Coin.prototype.collide = function(state) {
     // increment score
     state.score.coins.push(this);
     soundFX.src = "./audio/coin.wav";
     soundFX.play();
-    // create a filtered array for coints
-    let filtered = state.actors.filter(a => a != this);
-    let filteredCoins = state.actors.filter(a => a.type === "coin");
-    //console.log("filteredCoins: ", filteredCoins);
+    // create a filtered array for coins
+    const filtered = state.actors.filter(a => a != this);
+
     return new State(state.level, filtered, state.status, state.events, state.score, state.currentEvent, {}, state.eventPause, state.loadPoint);
   };
+
   const wobbleSpeed = 8, wobbleDist = 0.07;
 
   Coin.prototype.update = function(time) {
     let wobble = this.wobble + time * wobbleSpeed;
     let wobblePos = Math.sin(wobble) * wobbleDist;
-    return new Coin(this.basePos.plus(new Vec(0, wobblePos)),
-                    this.basePos, wobble);
+    return (
+      new Coin(this.basePos.plus(new Vec(0, wobblePos)), this.basePos, wobble)
+    );
   };
 
   class Level {
@@ -876,63 +874,69 @@ function onStart(preDeathScore) {
     }
   };
 
+
+
   const levelChars = {
 
     // actors:
-     "@": Player,
-     "1": Monster,
-     "o": Coin,
+    "@": Player,
+    "1": Monster,
+    "o": Coin,
 
     // movingEnemies:
-      "=": Lava, "|": Lava, "v": Lava,
+    "=": Lava, "|": Lava, "v": Lava,
 
     // staticEnemies:
-      "+": "lava", "-": "lavaTop",
-      "a": "water", "A": "waterTop",
-      "t": "torch",
+    "+": "lava", "-": "lavaTop",
+    "a": "water", "A": "waterTop",
+    "t": "torch",
 
     // eventTiles:
-      "P": "portal", "l": "loadPoint",
+    "P": "portal", "l": "loadPoint",
 
     // platforms:
-      "B": "ipLeft", "N": "ipCenter", "M": "ipRight", "<": "ipSingle", //(ice platforms)
-      "5": "spLeft", "6": "spCenter", "7": "spRight", "8": "spSingle", //(stone platforms)
-      "T": "sapLeft", "Y": "sapCenter", "U": "sapRight", "I": "sapSingle", //(sand platforms)
+    "B": "ipLeft", "N": "ipCenter", "M": "ipRight", "<": "ipSingle", //(ice platforms)
+    "5": "spLeft", "6": "spCenter", "7": "spRight", "8": "spSingle", //(stone platforms)
+    "T": "sapLeft", "Y": "sapCenter", "U": "sapRight", "I": "sapSingle", //(sand platforms)
 
     // landTop:
-      "q": "grassLeft", "w": "grassCenter", "e": "grassRight",
-      "b": "iceLeft", "n": "iceCenter", "m": "iceRight",
-      "2": "stoneLeft", "3": "stoneCenter", "4": "stoneRight",
-      "R": "sandLeft", "y": "sandCenter", "u": "sandRight",
-      // more
+    "q": "grassLeft", "w": "grassCenter", "e": "grassRight",
+    "b": "iceLeft", "n": "iceCenter", "m": "iceRight",
+    "2": "stoneLeft", "3": "stoneCenter", "4": "stoneRight",
+    "R": "sandLeft", "y": "sandCenter", "u": "sandRight",
+    // more
 
     // filler:
-       ".": "empty", "d": "dirt", ",": "iceFill", "c": "cloud", "r": "sandFill",  "#": "stoneFill",
+    ".": "empty", "d": "dirt", ",": "iceFill", "c": "cloud", "r": "sandFill",  "#": "stoneFill",
 
     // decorations:
-      ">" : "signLeft",
+    ">" : "signLeft",
   };
+
+
 
   class State {
     constructor(level, actors, status, events, score, currentEvent, selected, eventPause, loadPoint) {
+      /* eslint-disable no-console */
       // check level is an object
       if (typeof level !== "object") { console.log("Level is not an object: ", level); throw "error near 724"; }
       // if actors doesn't exist, throw error
       if (typeof actors !== "object") { console.log("actors is not an object: ", actors); throw "error ~726"; }
       // check status (only a string is acceptable)
-      if (typeof status !== "string") { console.log("status is not a string: ", status); throw "error near 728" }
+      if (typeof status !== "string") { console.log("status is not a string: ", status); throw "error near 728"; }
       // check events (must be object && at least 1 length)
       if ((typeof events !== "object") || (events.length < 1)) { console.log("events is not an object or has less than 1 length: ", events); throw "error near 731"; }
       // check score is an object
-      if (typeof score !== "object") { console.log("score is not an object: ", score); throw "error near 732" }
+      if (typeof score !== "object") { console.log("score is not an object: ", score); throw "error near 732"; }
       // check current event is a number
-      if (typeof currentEvent !== "number") { console.log("currentEvent is not a number: ", currentEvent); throw "error near 734" }
+      if (typeof currentEvent !== "number") { console.log("currentEvent is not a number: ", currentEvent); throw "error near 734"; }
       // check if selected is an object
-      if (typeof selected !== "object") { console.log("selected is not an object: ", selected); throw "error near 736" }
+      if (typeof selected !== "object") { console.log("selected is not an object: ", selected); throw "error near 736"; }
       // check eventPause is a boolean
-      if (typeof eventPause !== "boolean") { console.log("eventPause is not a boolean: ", eventPause); throw "error ~ 772"}
+      if (typeof eventPause !== "boolean") { console.log("eventPause is not a boolean: ", eventPause); throw "error ~ 772"; }
       // check loadPoint is an object
-      if (typeof loadPoint !== "object") { console.log("loadPoint is not an object: ", eventPause); throw "error ~ 1338"}
+      if (typeof loadPoint !== "object") { console.log("loadPoint is not an object: ", eventPause); throw "error ~ 1338"; }
+      /* eslint-enable no-console */
 
       this.level = level;
       this.actors = actors;
@@ -949,7 +953,7 @@ function onStart(preDeathScore) {
       // INPUT/OUTPUT CHECKS IN PLACE
       // state.start should only be getting invoked by STARTLEVEL()
       // EXPECTED OUTPUT: an initial state that is the same every level
-    //console.log("Starting new State");
+      //console.log("Starting new State");
 
       const startArgs = {
         level: {},
@@ -964,41 +968,33 @@ function onStart(preDeathScore) {
         selected: {},
         eventPause: false,
         loadPoint: {},
-      }
+      };
       // check level type (object required) and possibly assign actors if undefined
-      if (typeof level !== "object") {
-      //console.log("Level is not an object: ", level);
-        throw "error near 678";
+      if (typeof level !== "object") { throw ("error ~ Level is not an object: ", level);
       } else {
         startArgs.level = level;
-        if (typeof actors !== "undefined") {
-        //console.log("actors was already defined, why? ", actors);
-          throw "error ~747";
+        if (typeof actors !== "undefined") { throw ("error ~ actors was already defined, why? ", actors);
         } else startArgs.actors = level.startActors;
       }
       // check status (only a string is acceptable)
-      if (typeof status !== "string") {
-      //console.log("status is not a string");
-        throw "error near 687"
+      if (typeof status !== "string") { throw "error ~ status is not a string";
       } else startArgs.status = status;
 
       // check events (must be object && at least 1 length)
-      if ((typeof events !== "object") || (events.length < 1)) {
-      //console.log("events is not an object or has less than 1 length: ", events);
-        throw "error near 704";
+      if ((typeof events !== "object") || (events.length < 1)) { throw ("error ~ events is not an object or has less than 1 length: ", events);
       } else {
         let newEvents = [];
-        let x = 0;
-        events.forEach((x, index) => {
-          newEvents.push(x)
-          x++
-        })
+
+        events.forEach((x) => {
+          newEvents.push(x);
+          x++;
+        });
 
         // make sure events are not fired from last game:
         newEvents.forEach((x) => {
           x.fired = false;
-        })
-      //console.log("newEvents: ", newEvents);
+        });
+        // console.log("newEvents: ", newEvents);
         // console.log("event x has been unfired: ", newEvents);
 
         startArgs.events = newEvents;
@@ -1017,40 +1013,35 @@ function onStart(preDeathScore) {
 
 
       if (typeof score !== "object") {
-      //console.log("score is not an object: ", score);
-        throw "error ~1492"
+        throw ("error ~ score is not an object: ", score);
       } else startArgs.selected = score;
 
       // if there is a current event, throw error.
       // else, set to 0 for level start
       if (typeof currentEvent !== "number" || currentEvent !== 0) {
-      //console.log("currentEvent is non-zero or NAN. Why?: ", currentEvent);
-        throw "error ~ 858";
+        throw ("error ~ currentEvent is non-zero or NAN. Why?: ", currentEvent);
       } else {
         startArgs.currentEvent = currentEvent = 0;
       }
 
       // start state should have no keys selected. Check and set to empty
       if ((typeof selected === "object") && (Object.keys(selected).length !== 0)) {
-      //console.log("attempted to start state with selected keys being non-empty");
-        throw "error ~ 866";
+        throw "error ~ attempted to start state with selected keys being non-empty";
       } else startArgs.selected = selected;
 
       // is event pause boolean?
       if ((typeof eventPause !== "boolean")) {
-      //console.log("eventPause is not boolean. Why?: ", eventPause);
-        throw "error ~872";
+        throw ("error ~ eventPause is not boolean. Why?: ", eventPause);
       } else startArgs.eventPause = eventPause;
 
 
       // check loadPoint is an object
       if (typeof loadPoint !== "object") {
-      //console.log("loadPoint is not an object: ", loadPoint);
-        throw "error ~ 1417"
+        throw ("error ~ loadPoint is not an object: ", loadPoint);
       } else startArgs.loadPoint = loadPoint;
 
       // Log resulting startArgs object && pass into return
-    //console.log("Initializing new state with the following args: ", startArgs)
+      // console.log("Initializing new state with the following args: ", startArgs)
       return new State(startArgs.level, startArgs.actors, startArgs.status, startArgs.events, startArgs.score, startArgs.currentEvent, startArgs.selected, startArgs.eventPause, startArgs.loadPoint);
     }
 
@@ -1077,8 +1068,8 @@ function onStart(preDeathScore) {
 
       if (!this.eventPause) {
 
-        // 1.Create map of actors, invoking each one's update method
-          //  a. NOTE: update methods are self contained and only return new actors
+        // 1. Create map of actors, invoking each one's update method
+        //   a. NOTE: update methods are self contained and only return new actors
         actors = this.actors.map(actor => actor.update(time, this, arrowKeys));
 
         // 2. Create 'newState' object = new State(...state + new 'actor' argument)
@@ -1087,8 +1078,8 @@ function onStart(preDeathScore) {
         // console.log("creating a new state ~868: ", newState);
 
         // 3. If newState.status !== "playing", return newState
-          //  a. This stops animation and should cause a level reset
-          //  b. Why call this here? Should there ever be a case where we find out here playing is false?
+        //   a. This stops animation and should cause a level reset
+        //   b. Why call this here? Should there ever be a case where we find out here playing is false?
         if (newState.status !== "playing") return newState;
 
       }
@@ -1106,7 +1097,7 @@ function onStart(preDeathScore) {
             for (const x in numKeys) {
               // i. If either condition is not met, throw error
               if (!x || (y > 0)) {
-                console.log("A property of numKey is false or there is more than one prop. numKey should only have one property and it should be true.");
+                // console.log("A property of numKey is false or there is more than one prop. numKey should only have one property and it should be true.");
                 throw "error ~853";
               }
               y++;
@@ -1144,7 +1135,7 @@ function onStart(preDeathScore) {
               newState.score.coins.push(x);
             }
           }
-        //console.log("updated score: ", newState.score);
+          //console.log("updated score: ", newState.score);
 
           // d. Update the DOM
           document.getElementById("actionOptions").style.display = "none";
@@ -1157,7 +1148,7 @@ function onStart(preDeathScore) {
 
           // e. Clear the selected key
           Object.keys(newState.selected).forEach(function(key) { delete newState.selected[key]; });
-        //console.log("newState.selected is equal to: ", newState.selected);
+          //console.log("newState.selected is equal to: ", newState.selected);
 
           // f. Make sure we don't respond twice
           newState.events[(newState.currentEvent)].fired = true;
@@ -1172,7 +1163,7 @@ function onStart(preDeathScore) {
       }
 
       // 6. Check if the player is touching static lava
-        // NOTE: If implementing other 'deadly' static map objects, update here & @ levelChars
+      //   NOTE: If implementing other 'deadly' static map objects, update here & @ levelChars
       let player = newState.player;
       if (
         (this.level.touches(player.pos, player.size, "lava")) ||
@@ -1189,11 +1180,11 @@ function onStart(preDeathScore) {
             newState.events[x].fired = false;
           }
         }
-      //console.log("{state.update} cleared events: ", newState.events);
+        //    console.log("{state.update} cleared events: ", newState.events);
         // Returning new State.
         // level, actors, status, events, score, currentEvent, selected are valid
         // only "lost" should technically matter, but still good practice
-      //console.log("creating a new state ~1657");
+        //    console.log("creating a new state ~1185");
         soundFX.src = "./audio/death.wav";
         soundFX.play();
         return new State(this.level, actors, "lost", newState.events, this.score, this.currentEvent, {}, false, this.loadPoint);
@@ -1209,23 +1200,23 @@ function onStart(preDeathScore) {
             newState.events[x].fired = false;
           }
         }
-      //console.log("{state.update} cleared events: ", newState.events);
+        //    console.log("{state.update} cleared events: ", newState.events);
         // Returning new State.
         // level, actors, status, events, score, currentEvent, selected are valid
         // only "lost" should technically matter, but still good practice
-      //console.log("creating a new state ~1017");
+        //    console.log("creating a new state ~1017");
         return new State(this.level, actors, "won", newState.events, this.score, this.currentEvent, {}, false, this.loadPoint);
 
         // if player touches a load point, set load point equal to playerPosition
       } if (this.level.touches(player.pos, player.size, "loadPoint")) {
         if (this.loadPoint !== player.pos) {
           newState.loadPoint = player.pos;
-        };
+        }
       }
 
       // 7. Handle actor collisions
-        //  a. These collsions return new State objects!!!!!!!!!!
-        //  b. We then set newState = returned state object
+      //   a. These collsions return new State objects!!!!!!!!!!
+      //   b. We then set newState = returned state object
       for (let actor of actors) {
         if (actor != player && overlap(actor, player)) {
           newState = actor.collide(newState);
@@ -1233,8 +1224,7 @@ function onStart(preDeathScore) {
         }
       }
 
-      // LAST. Return newState
-      /* TO DO:
+      /* LAST: Return newState
        1. check player state returned
        2. check Monster state returned
        3. check Lava state returned
@@ -1242,8 +1232,7 @@ function onStart(preDeathScore) {
       */
       return newState;
     } else {
-    //console.log("{state.update} Unexpected input! time: ", time, " arrowKeys: ", arrowKeys, " events: ", events, " numKeys: ", numKeys);
-      throw "err ~922";
+      throw ("error ~ Unexpected input! time: ", time, " arrowKeys: ", arrowKeys, " events: ", events, " numKeys: ", numKeys);
     }
   };
 
@@ -1286,7 +1275,7 @@ function onStart(preDeathScore) {
       this.drawBackground(state.level);
       this.drawActors(state.actors);
     }
-  }
+  };
 
   CanvasDisplay.prototype.updateViewport = function(state) {
     let view = this.viewport, marginX = view.width / 3, marginY = view.width / 4;
@@ -1295,6 +1284,7 @@ function onStart(preDeathScore) {
 
     //console.log("view: ", view, "margin: ", margin, "player: ", player, "center: ", center);
 
+    /* eslint-disable indent */
     if (center.x < view.left + marginX) {
       view.left = Math.max(center.x - marginX, 0);
     } else if (center.x > view.left + view.width - marginX) {
@@ -1307,6 +1297,7 @@ function onStart(preDeathScore) {
       view.top = Math.min(center.y + marginY - view.height,
                           state.level.height - view.height);
     }
+    /* eslint-enable indent */
   };
 
   CanvasDisplay.prototype.clearDisplay = function(status, level) {
@@ -1323,10 +1314,9 @@ function onStart(preDeathScore) {
   };
 
   let otherSprites = document.createElement("img");
-  otherSprites.src = "./images/otherSprites.png"
+  otherSprites.src = "./images/otherSprites.png";
   let portalSprites = document.createElement("img");
   portalSprites.src = "./images/portalRings1.png";
-  let portalOverlap = 5;
   let cloudSprite = document.createElement("img");
   cloudSprite.src = "./images/cloud.png";
   let loadSprite = document.createElement("img");
@@ -1334,7 +1324,7 @@ function onStart(preDeathScore) {
   let newSprites = document.createElement("img");
   newSprites.src = "./images/tiles_spritesheet.png";
   let lavaAnimation = document.createElement("img");
-  lavaAnimation.src = './images/lavaAnimation.png';
+  lavaAnimation.src = "./images/lavaAnimation.png";
 
   CanvasDisplay.prototype.drawBackground = function(level) {
     let {left, top, width, height} = this.viewport;
@@ -1347,6 +1337,13 @@ function onStart(preDeathScore) {
       // waterSwitch is used below to give a reference for what the next water frame should be
       let waterSwitch = 0;
       let lavaSwitch = 4;
+
+      let waterTile;
+      let lavaTile;
+      let torchTile;
+      let loadTile;
+      let portalTile;
+
       for (let x = xStart; x < xEnd; x++) {
         let tile = level.rows[y][x];
         if (tile === "empty") continue;
@@ -1362,234 +1359,236 @@ function onStart(preDeathScore) {
         let height = scale;
 
         switch (tile) {
-          case "sapLeft":
-            img = newSprites;
-            tileX = 361;
-            tileY = 360;
-            break;
-          case "sapCenter":
-            img = newSprites;
-            tileX = 361;
-            tileY = 288;
-            break;
-          case "sapRight":
-            img = newSprites;
-            tileX = 361;
-            tileY = 216;
-            break;
-          case "sapSingle":
-            img = newSprites;
-            tileX = 360;
-            tileY = 432;
-            break;
-          case "sandFill":
-            img = newSprites;
-            tileX = 577;
-            tileY = 865;
-            break;
-          case "sandLeft":
-            img = newSprites;
-            tileX = 288;
-            tileY = 648;
-            break;
-          case "sandCenter":
-            img = newSprites;
-            tileX = 289;
-            tileY = 576;
-            break;
-          case "sandRight":
-            img = newSprites;
-            tileX = 289;
-            tileY = 504;
-            break;
-          case "ipLeft":
-            img = newSprites;
-            tileX = 217;
-            tileY = 576;
-            break;
-          case "ipCenter":
-            img = newSprites;
-            tileX = 217;
-            tileY = 504;
-            break;
-          case "ipRight":
-            img = newSprites;
-            tileX = 217;
-            tileY = 432;
-            break;
-          case "ipSingle":
-            img = newSprites;
-            tileX = 217;
-            tileY = 648;
-            break;
-          case "iceFill":
-            img = newSprites;
-            tileX = 721;
-            tileY = 865;
-            break;
-          case "iceLeft":
-            img = newSprites;
-            tileX = 145;
-            tileY = 864;
-            break;
-          case "iceCenter":
-            img = newSprites;
-            tileX = 145;
-            tileY = 792;
-            break;
-          case "iceRight":
-            img = newSprites;
-            tileX = 145;
-            tileY = 720;
-            break;
-          case "spLeft":
-            img = newSprites;
-            tileX = 431;
-            tileY = 723;
-            break;
-          case "spCenter":
-            img = newSprites;
-            tileX = 649;
-            tileY = 651;
-            break;
-          case "spRight":
-            img = newSprites;
-            tileX = 795;
-            tileY = 651;
-            break;
-          case "spSingle":
-            img = newSprites;
-            tileX = 792;
-            tileY = 360;
-            break;
-          case "stoneFill":
-            img = newSprites;
-            tileX = 505;
-            tileY = 289;
-            break;
-          case "stoneLeft":
-            img = newSprites;
-            tileX = 793;
-            tileY = 216;
-            break;
-          case "stoneCenter":
-            img = newSprites;
-            tileX = 793;
-            tileY = 144;
-            break;
-          case "stoneRight":
-            img = newSprites;
-            tileX = 793;
-            tileY = 71;
-            sheight = 66;
-            break;
-          case "waterTop":
-            img = newSprites;
-            let  waterTile = ((Math.floor(Date.now() / 250) % 8 + waterSwitch++) % 8);
-            tileX = 433 + waterTile * 8;
-            tileY = 581;
-            swidth = 12;
-            screenY += 5;
-            if (waterSwitch > 8) {waterSwitch = 0};
-            break;
-          case "water":
-            img = newSprites;
-            tileX = 505;
-            tileY = 215;
-            break;
-          case "grassBig":
-            img = newSprites;
-            tileX = 650;
-            tileY = 0;
-            break;
-          case "grassLeft":
-            img = newSprites;
-            tileX = 505;
-            tileY = 648;
-            break;
-          case "grassCenter":
-            img = newSprites;
-            tileX = 505;
-            tileY = 576;
-            break;
-          case "grassRight":
-            img = newSprites;
-            tileX = 505;
-            tileY = 504;
-            break;
-          case "dirt":
-            img = newSprites;
-            tileX = 577;
-            tileY = 866;
-            break;
-          case "lavaTop":
-            img = lavaAnimation;
-            let  lavaTile = ((Math.floor(Date.now() / 250) % 8 + lavaSwitch++) % 8);
-            tileX = 0 + lavaTile * 8;
-            tileY = 0;
-            swidth = 70;
-            sheight = 70;
-            screenY += 5;
-            if (lavaSwitch > 8) {lavaSwitch = 0};
-            break;
-          case "lava":
-            img = newSprites;
-            tileX = 505;
-            tileY = 0;
-            break;
-          case "torch":
-            img = newSprites;
-            tileX = 71;
-            let torchNum = Math.floor(Date.now() / 60) % 2;
-            tileY = 143 + (torchNum * 73);
-            break;
-          case "loadPoint":
-            img = loadSprite;
-            let loadNum = Math.floor(Date.now() / 110) % 4;
-            tileX = loadNum * 32;
-            tileY = 0;
-            swidth = 32;
-            sheight = 32;
-            height += 12;
-            width += 12;
-            screenY -= 20;
-            break;
-          case "cloud":
-            img = cloudSprite;
-            tileX = 0;
-            tileY = 0;
-            swidth = scale;
-            sheight = scale;
-            break;
-          case "portal":
-            img = portalSprites;
-            let portalNum = Math.floor(Date.now() / 60) % 17;
-            tileX = portalNum * 45;
-            tileY = 0;
-            swidth = 45;
-            sheight = 45;
-            screenY -= 15;
-            width = 35;
-            height = 35;
-            break;
-          case "signLeft":
-            img = newSprites;
-            tileX = 292;
-            tileY = 215;
-            break;
-          default:
-            console.log("no type assigned to tile: ", tile);
+        case "sapLeft":
+          img = newSprites;
+          tileX = 361;
+          tileY = 360;
+          break;
+        case "sapCenter":
+          img = newSprites;
+          tileX = 361;
+          tileY = 288;
+          break;
+        case "sapRight":
+          img = newSprites;
+          tileX = 361;
+          tileY = 216;
+          break;
+        case "sapSingle":
+          img = newSprites;
+          tileX = 360;
+          tileY = 432;
+          break;
+        case "sandFill":
+          img = newSprites;
+          tileX = 577;
+          tileY = 865;
+          break;
+        case "sandLeft":
+          img = newSprites;
+          tileX = 288;
+          tileY = 648;
+          break;
+        case "sandCenter":
+          img = newSprites;
+          tileX = 289;
+          tileY = 576;
+          break;
+        case "sandRight":
+          img = newSprites;
+          tileX = 289;
+          tileY = 504;
+          break;
+        case "ipLeft":
+          img = newSprites;
+          tileX = 217;
+          tileY = 576;
+          break;
+        case "ipCenter":
+          img = newSprites;
+          tileX = 217;
+          tileY = 504;
+          break;
+        case "ipRight":
+          img = newSprites;
+          tileX = 217;
+          tileY = 432;
+          break;
+        case "ipSingle":
+          img = newSprites;
+          tileX = 217;
+          tileY = 648;
+          break;
+        case "iceFill":
+          img = newSprites;
+          tileX = 721;
+          tileY = 865;
+          break;
+        case "iceLeft":
+          img = newSprites;
+          tileX = 145;
+          tileY = 864;
+          break;
+        case "iceCenter":
+          img = newSprites;
+          tileX = 145;
+          tileY = 792;
+          break;
+        case "iceRight":
+          img = newSprites;
+          tileX = 145;
+          tileY = 720;
+          break;
+        case "spLeft":
+          img = newSprites;
+          tileX = 431;
+          tileY = 723;
+          break;
+        case "spCenter":
+          img = newSprites;
+          tileX = 649;
+          tileY = 651;
+          break;
+        case "spRight":
+          img = newSprites;
+          tileX = 795;
+          tileY = 651;
+          break;
+        case "spSingle":
+          img = newSprites;
+          tileX = 792;
+          tileY = 360;
+          break;
+        case "stoneFill":
+          img = newSprites;
+          tileX = 505;
+          tileY = 289;
+          break;
+        case "stoneLeft":
+          img = newSprites;
+          tileX = 793;
+          tileY = 216;
+          break;
+        case "stoneCenter":
+          img = newSprites;
+          tileX = 793;
+          tileY = 144;
+          break;
+        case "stoneRight":
+          img = newSprites;
+          tileX = 793;
+          tileY = 71;
+          sheight = 66;
+          break;
+        case "waterTop":
+          img = newSprites;
+          waterTile = ((Math.floor(Date.now() / 250) % 8 + waterSwitch++) % 8);
+          tileX = 433 + waterTile * 8;
+          tileY = 581;
+          swidth = 12;
+          screenY += 5;
+          if (waterSwitch > 8) { waterSwitch = 0; }
+          break;
+        case "water":
+          img = newSprites;
+          tileX = 505;
+          tileY = 215;
+          break;
+        case "grassBig":
+          img = newSprites;
+          tileX = 650;
+          tileY = 0;
+          break;
+        case "grassLeft":
+          img = newSprites;
+          tileX = 505;
+          tileY = 648;
+          break;
+        case "grassCenter":
+          img = newSprites;
+          tileX = 505;
+          tileY = 576;
+          break;
+        case "grassRight":
+          img = newSprites;
+          tileX = 505;
+          tileY = 504;
+          break;
+        case "dirt":
+          img = newSprites;
+          tileX = 577;
+          tileY = 866;
+          break;
+        case "lavaTop":
+          img = lavaAnimation;
+          lavaTile = ((Math.floor(Date.now() / 250) % 8 + lavaSwitch++) % 8);
+          tileX = 0 + lavaTile * 8;
+          tileY = 0;
+          swidth = 70;
+          sheight = 70;
+          screenY += 5;
+          if (lavaSwitch > 8) { lavaSwitch = 0; }
+          break;
+        case "lava":
+          img = newSprites;
+          tileX = 505;
+          tileY = 0;
+          break;
+        case "torch":
+          img = newSprites;
+          tileX = 71;
+          torchTile = Math.floor(Date.now() / 60) % 2;
+          tileY = 143 + (torchTile * 73);
+          break;
+        case "loadPoint":
+          img = loadSprite;
+          loadTile = Math.floor(Date.now() / 110) % 4;
+          tileX = loadTile * 32;
+          tileY = 0;
+          swidth = 32;
+          sheight = 32;
+          height += 12;
+          width += 12;
+          screenY -= 20;
+          break;
+        case "cloud":
+          img = cloudSprite;
+          tileX = 0;
+          tileY = 0;
+          swidth = scale;
+          sheight = scale;
+          break;
+        case "portal":
+          img = portalSprites;
+          portalTile = Math.floor(Date.now() / 60) % 17;
+          tileX = portalTile * 45;
+          tileY = 0;
+          swidth = 45;
+          sheight = 45;
+          screenY -= 15;
+          width = 35;
+          height = 35;
+          break;
+        case "signLeft":
+          img = newSprites;
+          tileX = 292;
+          tileY = 215;
+          break;
+        default:
+          throw("no type assigned to tile: ", tile);
         }
-        if (swidth === 0) {swidth = 68};
-        if (sheight === 0) {sheight = 68};
+        if (swidth === 0) { swidth = 68; }
+        if (sheight === 0) { sheight = 68; }
         // args: 1. what to draw, 2. where to start the drawing at x
         // 3. where to start drawing at y, 4. width of image, 5. height of image
         // 6. where to place the image (x) 7. where to place the image(y) 8. width to size the image to
         // 9. height to size the image to
         // console.log("drawing background. tile: ", tile, " tileX: ", tileX, "width: ", width, "height: ", height, " x: ", x, " y: ", y);
+        /* eslint-disable indent */
         this.cx.drawImage(img,
                             tileX,         tileY, swidth, sheight,
                             screenX, screenY, width, height);
+        /* eslint-enable indent */
       }
     }
   };
@@ -1598,15 +1597,16 @@ function onStart(preDeathScore) {
   playerSprites.src = "./images/playerWalking.png";
   const playerXOverlap = 24;
 
+  /* eslint-disable indent */
   CanvasDisplay.prototype.drawPlayer = function(player, x, y,
                                                 width, height) {
+  /* eslint-enable indent */
     width += playerXOverlap * 2;
     x -= playerXOverlap;
     if (player.speed.x != 0) {
       this.flipPlayer = player.speed.x < 0;
     }
 
-    let playerSrc;
     let j = player.speed.y;
     if (-15 <= j && j !== 0 && j <= 15) { // making sure in range 1..11
     // console.log("j: ", j);
@@ -1662,8 +1662,11 @@ function onStart(preDeathScore) {
     let tileX = this.playerX * width;
     // item after playerX x was 0
     // console.log("here is the y position: ", this.playerY, "here is the tilex: ", tile);
+
+    /* eslint-disable indent */
     this.cx.drawImage(playerSprites, tileX, this.playerY, width, height,
                                      x,      y, width, height);
+    /* eslint-enable indent */
     this.cx.restore();
   };
 
@@ -1700,6 +1703,7 @@ function onStart(preDeathScore) {
           }
           tileX = tile * width;
           // console.log("drawing paladin. tileX: ", tileX, "width: ", width, "height: ", height, " x: ", x, " y: ", y);
+          /* eslint-disable indent */
           this.cx.drawImage(monsterSprites, tileX, 0, width, height,
                                             x,     (y + 1), 45, 38);
           this.cx.restore();
@@ -1713,6 +1717,7 @@ function onStart(preDeathScore) {
           this.cx.drawImage(otherSprites,
                             tileX, 0, width, height,
                             x,     y, width, height);
+          /* eslint-enable indent */
         }
       }
     }
@@ -1722,5 +1727,11 @@ function onStart(preDeathScore) {
 
   // Invoke the function that kicks it all off now that everything has been declared
   // All args are necessary except preDeathScore, which is only given in case of a continue
+
+  /* eslint-disable no-undef */
   runGame(GAME_LEVELS, GAME_EVENTS, CHAPTER_TITLES, TRACKS, CanvasDisplay, preDeathScore);
+  /* eslint-enable no-undef */
 }
+
+
+
