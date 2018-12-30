@@ -1,3 +1,5 @@
+/* eslint no-unused-vars: 0 */
+
 const TRACKS = [
   "./audio/RA02.mp3",
   "./audio/satisfucktion.mp3",
@@ -8,7 +10,7 @@ const TRACKS = [
   "./audio/RA09.mp3",
   "./audio/RAII16.mp3",
   "./audio/04BoktipsetFranHelvetet.mp3",
-]
+];
 
 const GAME_EVENTS = [
   [
@@ -416,19 +418,19 @@ const GAME_EVENTS = [
       ]
     }
   ]
-]
+];
 
 const CHAPTER_TITLES = [
-      "An Unexpected Journey",
-      "The Assistant Pig Keeper",
-      "The Potions Master",
-      "Muad'dib",
-      "Part Five",
-      "Less Talents",
-      "A Clang Well Done",
-      "Old Ghosts",
-      "Deep Thought",
-    ]
+  "An Unexpected Journey",
+  "The Assistant Pig Keeper",
+  "The Potions Master",
+  "Muad'dib",
+  "Part Five",
+  "Less Talents",
+  "A Clang Well Done",
+  "Old Ghosts",
+  "Deep Thought",
+];
 
 /*
 Level Ideas / Themes:
@@ -844,3 +846,4 @@ cccc...........................ccc......ccc.......................cccc..........
 ##################################################################################
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 `];
+

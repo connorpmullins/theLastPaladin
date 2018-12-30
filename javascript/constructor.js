@@ -45,6 +45,7 @@ line 38
 
 // Used to store gameplay stats on death so we can pass them back into the
 // game if the player continues
+
 let CONTINUEGAMESTATS = {
   continuesUsed: 0,
   lastCoins: [],
@@ -52,8 +53,6 @@ let CONTINUEGAMESTATS = {
   lastLevel: 0,
   lastAnswers: 0,
 };
-
-const email = "";// mail+recipient+at+dotcom
 
 // GLOBAL FUNCTIONS (INVOKED BY DOM ELEMENTS)
 // lines 49 - 90
@@ -72,11 +71,8 @@ function onSubmit() {
   const recipient = "thelastpaladin.developer";
   const at = String.fromCharCode(64);
   const dotcom = "gmail.com";
-  const mail = "mailto:";
-  // NOTES: if you don't have to change values, consider making them global/persistent
-  // so they don't have to be instantiated each time function is called
-  const beginning = ``;
-  window.open(email + '?subject=' + topic + '&body=' + encodedBody + '\n Type your name and click send! When the leader page is up I will send you an email');
+
+  window.open("mailto:"+recipient+at+dotcom+"?subject="+topic+"&body="+encodedBody+" \n Type your name and click send!\n When the leader page is up I will send you an email");
 }
 
 // NOTES
@@ -110,7 +106,7 @@ function viewScoreWin() {
 // When 'Continue' is pressed in DOM, call onStart function
 // and pass it the stats necessary to persist previous player state
 function continueGame() {
-  console.log("calling continue game. continueArgs: ", CONTINUEGAMESTATS);
+  // console.log("calling continue game. continueArgs: ", CONTINUEGAMESTATS);
   onStart(CONTINUEGAMESTATS);
 }
 
@@ -135,8 +131,8 @@ function onStart(preDeathScore) {
   const soundFX = document.getElementById("soundFX");
 
   // initialize scale
-    // Used to size the canvas and actors (also some sprite positions (BAD - Should change))
-    // TODO - figure out how to make scale dynamic so I can make game window & element sizes responsive
+  // Used to size the canvas and actors (also some sprite positions (BAD - Should change))
+  // TODO - figure out how to make scale dynamic so I can make game window & element sizes responsive
   const scale = 20;
   // NOTE
   // constant, commonly used strings can be initialized once and used by reference.
@@ -196,7 +192,7 @@ function onStart(preDeathScore) {
     let down = {paused: false};
     function track(event) {
       if (keys.includes(event.key)) {
-        if (down[event.key]) {down[event.key] = false}
+        if (down[event.key]) {down[event.key] = false;}
         else {
           down[event.key] = event.type === "keypress";
           event.preventDefault();
@@ -286,13 +282,13 @@ function onStart(preDeathScore) {
       // just use filter method to return filteredArr
 
       // for (let i = 0; i < level.startActors.length; i++) {
-      for (actor of level.startActors) {
-        console.log(actor);
+      for (const actor of level.startActors) {
+        // console.log(actor);
         // const currActor = actor;
         if (actor.type === "coin") {
           let found = false;
           // console.log("startActor[i].type is coin: ", actor);
-          for (coin of coinsLevel) {
+          for (const coin of coinsLevel) {
             // console.log("coin: ", coin);
             const c = coin.basePos, a = actor.basePos;
             if ((c.x === a.x) && (c.y === a.y)) {
@@ -314,7 +310,7 @@ function onStart(preDeathScore) {
 
     // I was having some issues with the EVENTS global object getting manipulated and causing issues
     // So I probably went overboard here. To Be Fixed at a later date
-      // but be cautious and log events every runLevel cycle
+    // but be cautious and log events every runLevel cycle
     const EVENTS = Object.freeze(events);
     // const gameEvents = EVENTS;
     // console.log("invoking runLevel func w/ following args: ", level, Display, gameEvents);
@@ -1103,29 +1099,29 @@ function onStart(preDeathScore) {
         //console.log("there is a currentEvent > 0 && the event has not been fired");
         // a. Check if numKey has some num between 1 & 4 as a key
         if (newState.eventPause) {
-          if (numKeys.hasOwnProperty('1') || numKeys.hasOwnProperty('2') || numKeys.hasOwnProperty('3') || numKeys.hasOwnProperty('4')) {
+          if (numKeys.hasOwnProperty("1") || numKeys.hasOwnProperty("2") || numKeys.hasOwnProperty("3") || numKeys.hasOwnProperty("4")) {
 
             // b. For all properties in numKey, make sure nothing is false && check there is no more than one prop
-            let y = 0
-            for (x in numKeys) {
+            let y = 0;
+            for (const x in numKeys) {
               // i. If either condition is not met, throw error
               if (!x || (y > 0)) {
-              //console.log("A property of numKey is false or there is more than one prop. numKey should only have one property and it should be true.");
+                console.log("A property of numKey is false or there is more than one prop. numKey should only have one property and it should be true.");
                 throw "error ~853";
               }
-              y++
+              y++;
             }
             // c. Then set newState.selected to numKeys;
-          //console.log("updating newState.selected");
+            //console.log("updating newState.selected");
             newState.selected = numKeys;
           }
         } else {
           Object.keys(numKeys).forEach(function(key) { delete numKeys[key]; });
-        //console.log("event just created, cleared numKeys: ", numKeys);
+          //console.log("event just created, cleared numKeys: ", numKeys);
           // d. If nothing has been selected but an event has been fired, set eventPause to true
           newState.eventPause = true;
         }
-      };
+      }
 
       // 5. Check if we have selected any valid response key
       if (newState.selected.hasOwnProperty("1") || newState.selected.hasOwnProperty("2") || newState.selected.hasOwnProperty("3") || newState.selected.hasOwnProperty("4")) {
@@ -1138,8 +1134,8 @@ function onStart(preDeathScore) {
           let selection = Object.getOwnPropertyNames(newState.selected);
 
           // c. If all event results are there and are numbers, update the score of newState
-        //console.log("newState.score: ", newState.score);
-        //console.log("update score conditions: ", (typeof events[(newState.currentEvent)].options[(selection[0] - 1)].result.coins === "number") , (typeof events[(newState.currentEvent)].options[(selection[0] - 1)].result.correctAnswers === "number"));
+          // console.log("newState.score: ", newState.score);
+          // console.log("update score conditions: ", (typeof events[(newState.currentEvent)].options[(selection[0] - 1)].result.coins === "number") , (typeof events[(newState.currentEvent)].options[(selection[0] - 1)].result.correctAnswers === "number"));
           if ((typeof events[(newState.currentEvent)].options[(selection[0] - 1)].result.coins === "number") && (typeof events[(newState.currentEvent)].options[(selection[0] - 1)].result.correctAnswers === "number")) {
           //console.log("update score conditions met!: ", )
             let x = new Coin(0, 0);
