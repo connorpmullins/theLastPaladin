@@ -11,6 +11,10 @@
       - change status div children's displays to none
       - change status div text to "Victory or You Died"
     . [mid-priority] Add Leaderboard
+    . [mid-priority] Change the way background image is rendered
+      - right now it is redrawn every frame
+      - change it so it is drawn once on a canvas that sits behind
+        the main game one. Game canvas will need to be cleared and not be filled
     . [mid-priority] Edit designs to force players to trust me
       i. create fall points early on where the player can't see what they're jumping into
       ii. consistently have safe landings designed for players.
@@ -53,6 +57,9 @@ let CONTINUEGAMESTATS = {
   lastLevel: 0,
   lastAnswers: 0,
 };
+
+let bckIMG = new Image();
+bckIMG.src = "./images/gameBackground.png";
 
 // GLOBAL FUNCTIONS (INVOKED BY DOM ELEMENTS)
 // lines 49 - 90
@@ -319,6 +326,7 @@ function onStart(preDeathScore) {
 
     // builds display
     let display = new Display(document.getElementById("gameBox"), level);
+    // document.getElementById("canvas").style.background = "url('./images/gameBackground.png')";
 
     // initializes state with proper args
     let state = State.start(level, undefined, "playing", EVENTS, {}, 0, {}, false, {});
@@ -391,7 +399,7 @@ function onStart(preDeathScore) {
     }
     // otherwise if we're starting a new game...
     else {
-      level = 4;
+      level = 0;
       continuesUsed = 0;
       startTime = new Date();
       CUMSCORE.coins = [];
@@ -1245,6 +1253,7 @@ function onStart(preDeathScore) {
   class CanvasDisplay {
     constructor(parent, level) {
       this.canvas = document.createElement("canvas");
+      this.canvas.setAttribute("id", "canvas");
       this.canvas.width = Math.min(600, level.width * scale);
       this.canvas.height = Math.min(300, level.height * scale);
       parent.appendChild(this.canvas);
@@ -1302,15 +1311,16 @@ function onStart(preDeathScore) {
 
   CanvasDisplay.prototype.clearDisplay = function(status, level) {
     if (status === "won") {
-      this.cx.fillStyle = "rgb(68, 191, 255)";
+      this.cx.fillStyle = "#44BFFF30";
+      this.cx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     } else if (status === "lost") {
-      this.cx.fillStyle = "rgb(44, 136, 214)";
-    } else if (level === 7) {
-      this.cx.fillStyle = "rgb(68, 191, 255)";
+      this.cx.fillStyle = "#00000030";
+      this.cx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     } else {
-      this.cx.fillStyle = "#0e2f44";
+      this.cx.drawImage(bckIMG, 0, 0, this.canvas.width, this.canvas.height);
+      //this.cx.fillStyle = "#0e2f44";
     }
-    this.cx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    //this.cx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   };
 
   let otherSprites = document.createElement("img");
